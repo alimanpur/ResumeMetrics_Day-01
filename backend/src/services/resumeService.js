@@ -7,6 +7,7 @@ const resumeRepo = require('../repositories/resume.repository');
 const analysisRepo = require('../repositories/analysis.repository');
 const { getAIProvider } = require('../providers/providerFactory');
 const { ResumeDTO, ResumeDetailDTO } = require('../dtos/resume.dto');
+const logger = require('../lib/logger');
 
 const SORT_MAP = {
   date: 'createdAt',
@@ -26,8 +27,12 @@ const uploadResume = async (userId, file, metadata, reqContext = {}) => {
   let cloudinaryResult = null;
   try {
     cloudinaryResult = await uploadToCloudinary(file.path);
-  } catch {
-    // Cloudinary upload failed, store locally
+  } catch (error) {
+    logger.error(`Cloudinary upload failed: ${error.message}`, {
+      fileName: file.originalname,
+      error: error.message
+    });
+    throw new ApiError(500, 'Failed to upload file to cloud storage. Please try again.');
   }
 
   const resume = await resumeRepo.resumeCreate({

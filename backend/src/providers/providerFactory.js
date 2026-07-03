@@ -17,11 +17,13 @@ let cachedProvider = null;
 const getAIProvider = () => {
   if (cachedProvider) return cachedProvider;
 
-  const providerName = env.NODE_ENV === 'production' ? 'openai' : 'mock';
+  // Use environment variable to select provider, default to mock
+  const providerName = env.AI_PROVIDER || 'mock';
   const ProviderClass = providers[providerName];
 
   if (!ProviderClass) {
-    throw new Error(`AI provider "${providerName}" not found. Available: ${Object.keys(providers).join(', ')}`);
+    const availableProviders = Object.keys(providers).join(', ');
+    throw new Error(`AI provider "${providerName}" not found. Available: ${availableProviders}`);
   }
 
   cachedProvider = new ProviderClass();

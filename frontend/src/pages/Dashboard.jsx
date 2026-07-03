@@ -85,19 +85,19 @@ export default function Dashboard() {
   // Dashboard metrics (Phase 19)
   const latestAnalysis = analyses.length > 0 ? analyses[0] : null
   const latestScore = latestAnalysis?.atsScore ?? latestAnalysis?.overallScore ?? (resumes.length > 0 ? resumes[0]?.latestScore : 0)
-  const avgScore = resumes.length > 0
-    ? Math.round(resumes.reduce((sum, r) => sum + (r.latestScore || 0), 0) / resumes.length)
+  const avgScore = analyses.length > 0
+    ? Math.round(analyses.reduce((sum, a) => sum + (a.atsScore || a.overallScore || 0), 0) / analyses.length)
     : 0
 
-  const bestScore = latestAnalysis?.hasComprehensiveReport ? Math.round(latestAnalysis.overallScore || latestAnalysis.atsScore || 0) : latestScore
-  const hasIntelligence = latestAnalysis?.hasComprehensiveReport || false
+  const bestScore = latestAnalysis ? Math.round(latestAnalysis.overallScore || latestAnalysis.atsScore || 0) : latestScore
+  const hasIntelligence = latestAnalysis?.comprehensiveReport || false
   const credibilityLevel = latestAnalysis?.credibilityAnalysis?.overallCredibility || 'unknown'
   const resumeHealthScore = latestAnalysis?.resumeIdentity?.resumeHealth?.score || bestScore
-  const analysisVersion = latestAnalysis?.analysisVersion || '1.0'
+  const analysisVersion = latestAnalysis?.analysisVersion || '2.0'
 
-  const weeklyData = resumes.slice(0, 7).reverse().map((r, i) => ({
-    day: r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-US', { weekday: 'short' }) : `Day ${i + 1}`,
-    score: r.latestScore || 0,
+  const weeklyData = (analyses || []).slice(0, 7).reverse().map((a, i) => ({
+    day: a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-US', { weekday: 'short' }) : `Day ${i + 1}`,
+    score: a.atsScore || a.overallScore || 0,
   }))
 
   const userName = profileData?.data?.data?.name ? profileData.data.data.name.split(' ')[0] : 'User'
