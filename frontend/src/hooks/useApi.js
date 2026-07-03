@@ -285,6 +285,62 @@ export const useAnalysisByResume = (resumeId) => {
   })
 }
 
+export const useComprehensiveReport = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'comprehensiveReport'],
+    queryFn: () => analysisApi.getComprehensiveReport(id),
+    enabled: !!id,
+  })
+}
+
+export const useCredibilityAnalysis = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'credibility'],
+    queryFn: () => analysisApi.getCredibilityAnalysis(id),
+    enabled: !!id,
+  })
+}
+
+export const useSkillsIntelligence = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'skillsIntelligence'],
+    queryFn: () => analysisApi.getSkillsIntelligence(id),
+    enabled: !!id,
+  })
+}
+
+export const useExperienceIntelligence = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'experienceIntelligence'],
+    queryFn: () => analysisApi.getExperienceIntelligence(id),
+    enabled: !!id,
+  })
+}
+
+export const useProjectIntelligence = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'projectIntelligence'],
+    queryFn: () => analysisApi.getProjectIntelligence(id),
+    enabled: !!id,
+  })
+}
+
+export const useInterviewPrep = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'interviewPrep'],
+    queryFn: () => analysisApi.getInterviewPrep(id),
+    enabled: !!id,
+  })
+}
+
+export const useLearningRoadmap = (id) => {
+  return useQuery({
+    queryKey: ['analysis', id, 'learningRoadmap'],
+    queryFn: () => analysisApi.getLearningRoadmap(id),
+    enabled: !!id,
+  })
+}
+
 // Comparison hooks
 export const useCreateComparison = () => {
   const queryClient = useQueryClient()

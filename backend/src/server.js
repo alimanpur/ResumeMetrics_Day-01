@@ -162,7 +162,45 @@ const startServer = async () => {
   try {
     // Warm up database connection
     await prisma.$queryRaw`SELECT 1`;
-    
+
+    // Phase 19 DB bootstrap: add intelligence columns if they don't exist
+    await prisma.$executeRaw`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'comprehensiveReport') THEN
+          ALTER TABLE "analyses" ADD COLUMN "comprehensiveReport" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'executiveSummary') THEN
+          ALTER TABLE "analyses" ADD COLUMN "executiveSummary" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'credibilityAnalysis') THEN
+          ALTER TABLE "analyses" ADD COLUMN "credibilityAnalysis" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'skillsIntelligence') THEN
+          ALTER TABLE "analyses" ADD COLUMN "skillsIntelligence" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'experienceIntelligence') THEN
+          ALTER TABLE "analyses" ADD COLUMN "experienceIntelligence" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'projectIntelligence') THEN
+          ALTER TABLE "analyses" ADD COLUMN "projectIntelligence" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'interviewPrep') THEN
+          ALTER TABLE "analyses" ADD COLUMN "interviewPrep" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'learningRoadmap') THEN
+          ALTER TABLE "analyses" ADD COLUMN "learningRoadmap" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'resumeEvolution') THEN
+          ALTER TABLE "analyses" ADD COLUMN "resumeEvolution" JSONB;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'analyses' AND column_name = 'recruiterAnalysis') THEN
+          ALTER TABLE "analyses" ADD COLUMN "recruiterAnalysis" JSONB;
+        END IF;
+      END $$;
+    `
+    logger.info('Phase 19 DB bootstrap: intelligence columns verified/applied');
+
     const server = app.listen(config.port, () => {
       logger.info(`🚀 Server running in ${config.nodeEnv} mode on port ${config.port}`);
       logger.info(`📚 API Docs: http://localhost:${config.port}/api-docs`);

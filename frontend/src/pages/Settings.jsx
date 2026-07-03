@@ -7,7 +7,7 @@ import { handleApiError } from '../api/errors'
 import { CardSkeleton, EmptyState } from '../components/ui/loading'
 import { ErrorState } from '../components/ui/error-state'
 import { toast } from 'sonner'
-import { Trash2, Loader2, User, Bell, Shield, Download, Monitor, Globe, Camera, ExternalLink, HelpCircle, FileText } from 'lucide-react'
+import { Trash2, Loader2, User, Bell, Shield, Download, Monitor, Camera, HelpCircle, FileText } from 'lucide-react'
 import { useNotification } from '../components/ui/Notification'
 
 function Section({ title, icon: Icon, children }) {
@@ -371,27 +371,16 @@ export default function Settings() {
                 <span className="rounded-full bg-emerald-50 px-3 py-1 font-mono text-xs text-emerald-700">Active</span>
               </div>
             </div>
-          </div>
-        </Section>
-
-        {/* Connected Accounts */}
-        <Section title="Connected Accounts" icon={Globe}>
-          <div className="border border-border bg-paper p-6">
-            <p className="text-sm text-ink/60">Manage your connected social accounts.</p>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between border border-border bg-paper-2 p-3">
+            <div className="border border-border bg-paper p-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <ExternalLink className="size-4 text-ink/40" />
-                  <span className="text-sm font-medium">LinkedIn</span>
+                  <Monitor className="size-5 text-ink/60" />
+                  <div>
+                    <div className="font-medium">Connected Devices</div>
+                    <div className="mt-1 text-xs text-ink/60">1 device currently connected</div>
+                  </div>
                 </div>
-                <span className="text-xs text-emerald-600 font-medium">Connected</span>
-              </div>
-              <div className="flex items-center justify-between border border-border bg-paper-2 p-3">
-                <div className="flex items-center gap-3">
-                  <ExternalLink className="size-4 text-ink/40" />
-                  <span className="text-sm font-medium">Google</span>
-                </div>
-                <span className="text-xs text-emerald-600 font-medium">Connected</span>
+                <span className="text-xs text-ink/40">Manage</span>
               </div>
             </div>
           </div>
@@ -466,16 +455,15 @@ export default function Settings() {
         {/* Help */}
         <Section title="Help & Support" icon={HelpCircle}>
           <div className="space-y-3">
-            <a href="/help" className="flex items-center justify-between border border-border bg-paper p-4 hover:border-ink/20">
-              <div className="flex items-center gap-3">
-                <FileText className="size-4 text-ink/40" />
-                <div>
-                  <div className="text-sm font-medium">Help Center</div>
-                  <div className="text-xs text-ink/50">FAQs, guides, and support</div>
+              <a href="/help" className="flex items-center justify-between border border-border bg-paper p-4 hover:border-ink/20">
+                <div className="flex items-center gap-3">
+                  <FileText className="size-4 text-ink/40" />
+                  <div>
+                    <div className="text-sm font-medium">Help Center</div>
+                    <div className="text-xs text-ink/50">FAQs, guides, and support</div>
+                  </div>
                 </div>
-              </div>
-              <ExternalLink className="size-3 text-ink/40" />
-            </a>
+              </a>
           </div>
         </Section>
 

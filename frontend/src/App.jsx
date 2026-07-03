@@ -32,6 +32,7 @@ const Help = lazy(() => import('./pages/Help.jsx'))
 
 // Not Found
 import NotFound from './pages/NotFound.jsx'
+import ErrorPage from './pages/ErrorPage.jsx'
 
 // Layouts
 import { AppShell } from './components/app/AppShell.jsx'
@@ -84,8 +85,12 @@ function App() {
         <Route path="/billing" element={<AnimatedPage><AppShell><Billing /></AppShell></AnimatedPage>} />
         <Route path="/help" element={<AnimatedPage><AppShell><Help /></AppShell></AnimatedPage>} />
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
+         {/* 404 */}
+         <Route path="*" element={<NotFound />} />
+         <Route path="/401" element={<ErrorPage code={401} title="Unauthorized" message="You need to sign in to access this page." />} />
+         <Route path="/403" element={<ErrorPage code={403} title="Forbidden" message="You don't have permission to access this resource." />} />
+         <Route path="/500" element={<ErrorPage code={500} title="Server error" message="Something went wrong on our end. We're working on it." />} />
+         <Route path="/offline" element={<ErrorPage code="offline" title="You're offline" message="Check your internet connection and try again." showGoHome={false} />} />
       </Routes>
     </Suspense>
   )

@@ -27,10 +27,27 @@ class AnalysisDTO {
       ats: analysis.atsScore || 0,
       keyword: analysis.keywordScore || 0,
       structure: analysis.formattingScore || 0,
+      readability: analysis.readabilityScore || 0,
+      formatting: analysis.formattingScore || 0,
+      actionVerbs: analysis.actionVerbScore || 0,
+      quantification: analysis.quantificationScore || 0,
+      quality: analysis.qualityScore || 0,
+      domainExperience: analysis.domainExperience || 0,
+      leadershipImpact: analysis.leadershipImpact || 0,
+      technicalProwess: analysis.technicalProwess || 0,
     };
+    this.processingTime = analysis.processingTime;
+    this.aiProvider = analysis.aiProvider;
+    this.aiModel = analysis.aiModel;
+    this.parserVersion = 'v2.4.1';
+    this.resumeVersion = analysis.resume?.version || '1.0';
+    this.analysisVersion = '2.0';
+    this.promptVersion = '2024.06';
     this.atsScores = [
       { name: 'Workable', parser: 'Standard', score: analysis.atsScore || 0, issues: [] },
-      { name: 'Greenhouse', parser: 'Standard', score: Math.max(0, (analysis.atsScore || 0) + 5), issues: [] },
+      { name: 'Greenhouse', parser: 'Standard', score: Math.max(0, (analysis.atsScore || 0) + 3), issues: [] },
+      { name: 'Lever', parser: 'Standard', score: Math.max(0, (analysis.atsScore || 0) - 2), issues: [] },
+      { name: 'ATS Friendly', parser: 'Standard', score: analysis.atsScore || 0, issues: [] },
     ];
     this.semanticScores = [
       { axis: 'Domain Experience', v: analysis.domainExperience || 0 },
@@ -58,6 +75,28 @@ class AnalysisDTO {
       createdAt: analysis.createdAt,
       latestScore: analysis.atsScore || 0,
     } : undefined;
+    this.comprehensiveReport = analysis.comprehensiveReport || null;
+    this.executiveSummary = analysis.executiveSummary || analysis.comprehensiveReport?.executiveSummary || null;
+    this.credibilityAnalysis = analysis.credibilityAnalysis || null;
+    this.skillsIntelligence = analysis.skillsIntelligence || null;
+    this.experienceIntelligence = analysis.experienceIntelligence || null;
+    this.projectIntelligence = analysis.projectIntelligence || null;
+    this.interviewPrep = analysis.interviewPrep || null;
+    this.learningRoadmap = analysis.learningRoadmap || null;
+    this.resumeEvolution = analysis.resumeEvolution || null;
+    this.recruiterAnalysis = analysis.recruiterAnalysis || analysis.comprehensiveReport?.recruiterNotes || null;
+    this.confidence = analysis.comprehensiveReport?.metadata?.confidence || null;
+    this.resumeIdentity = analysis.resumeIdentity || analysis.comprehensiveReport?.resumeIdentity || null;
+    this.suggestions = analysis.improvementSuggestions || [];
+    this.rawSuggestions = analysis.rawSuggestions || null;
+    this.duplicateKeywords = analysis.duplicateKeywords || [];
+    this.optimizationCheck = analysis.optimizationCheck || [];
+    this.actionVerbScore = analysis.actionVerbScore || 0;
+    this.quantificationScore = analysis.quantificationScore || 0;
+    this.domainExperience = analysis.domainExperience || 0;
+    this.leadershipImpact = analysis.leadershipImpact || 0;
+    this.technicalProwess = analysis.technicalProwess || 0;
+    this.sectionCompleteness = analysis.sectionCompleteness || [];
   }
 
   extractAlignedKeywords(missingKeywords) {
@@ -112,7 +151,9 @@ class AnalysisListDTO {
     this.id = analysis.id;
     this.status = analysis.status;
     this.atsScore = analysis.atsScore;
-    this.score = analysis.overallScore || analysis.atsScore;
+    this.overallScore = analysis.overallScore || analysis.atsScore;
+    this.keywordScore = analysis.keywordScore;
+    this.readabilityScore = analysis.readabilityScore;
     this.createdAt = analysis.createdAt;
     this.completedAt = analysis.completedAt || analysis.approvedAt;
     this.fileName = analysis.resume?.title || 'Untitled';
@@ -120,8 +161,15 @@ class AnalysisListDTO {
     this.latestScore = analysis.atsScore || 0;
     this.resume = analysis.resume ? {
       id: analysis.resume.id,
-      title: analysis.resume.title,
+      title: analysis.resume.title || 'Untitled',
     } : undefined;
+    this.fileName = this.resume?.title || 'Untitled';
+    this.hasComprehensiveReport = !!analysis.comprehensiveReport;
+    this.hasCredibility = !!analysis.credibilityAnalysis;
+    this.hasSkillsIntelligence = !!analysis.skillsIntelligence;
+    this.hasInterviewPrep = !!analysis.interviewPrep;
+    this.hasLearningRoadmap = !!analysis.learningRoadmap;
+    this.hasResumeEvolution = !!analysis.resumeEvolution;
   }
 
   static fromPrisma(analysis) {

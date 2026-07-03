@@ -2,7 +2,7 @@
  * Intelligence Layer Orchestrator
  * Main entry point for the AI analysis pipeline
  * Coordinates all engines and produces structured JSON output
- * Phase 17: Enhanced with comprehensive intelligence metrics
+ * Phase 19: Enhanced with comprehensive intelligence modules
  */
 
 class IntelligenceOrchestrator {
@@ -20,7 +20,6 @@ class IntelligenceOrchestrator {
     this.reportGenerator = require('./reportGenerator');
     this.evaluationEngine = require('./evaluation');
     
-    // Phase 17 Enhanced Engines
     this.grammarEngine = require('./grammarEngine');
     this.readabilityEngine = require('./readabilityEngine');
     this.actionVerbEngine = require('./actionVerbEngine');
@@ -28,46 +27,35 @@ class IntelligenceOrchestrator {
     this.recruiterConfidenceEngine = require('./recruiterConfidenceEngine');
     this.technicalScoreEngine = require('./technicalScoreEngine');
     this.comprehensiveReportGenerator = require('./comprehensiveReportGenerator');
+    
+    this.resumeIdentityEngine = require('./resumeIdentityEngine');
+    this.credibilityEngine = require('./credibilityEngine');
+    this.skillsEvidenceEngine = require('./skillsEvidenceEngine');
+    this.experienceIntelligenceEngine = require('./experienceIntelligenceEngine');
+    this.projectIntelligenceEngine = require('./projectIntelligenceEngine');
+    this.interviewPrepEngine = require('./interviewPrepEngine');
+    this.learningRoadmapEngine = require('./learningRoadmapEngine');
+    this.resumeEvolutionEngine = require('./resumeEvolutionEngine');
   }
 
-  /**
-   * Run complete analysis pipeline
-   * @param {string} resumeText - Raw resume text
-   * @param {Object} options - Analysis options
-   * @returns {Object} Complete analysis results
-   */
   async analyze(resumeText, options = {}) {
     const startTime = Date.now();
 
     try {
-      // Step 1: Document Normalization
       const normalizedDoc = this.documentNormalizer.normalize(resumeText);
-
-      // Step 2: ATS Analysis
       const atsResult = this.atsEngine.evaluate(normalizedDoc);
-
-      // Step 3: Keyword Analysis
       const keywordResult = this.keywordEngine.extractKeywords(normalizedDoc.cleanedText);
-
-      // Step 4: Semantic Analysis
       const semanticResult = this.semanticEngine.analyze(normalizedDoc);
-
-      // Step 5: Achievement Analysis
       const achievementResult = this.achievementEngine.analyze(normalizedDoc);
-
-      // Step 6: Industry Benchmark
       const benchmarkResult = this.benchmarkEngine.benchmark(normalizedDoc, options.targetRole);
 
-      // Step 7: Job Match (if job description provided)
       let jobMatchResult = null;
       if (options.jobDescription) {
         jobMatchResult = this.jobMatchEngine.match(normalizedDoc, options.jobDescription);
       }
 
-      // Step 8: Generate Rewrites for weak achievements
       const rewriteResults = this.generateRewrites(achievementResult);
 
-      // Step 9: Generate Explanations
       const explainedResults = this.explainabilityEngine.generateFullExplanation({
         ats: atsResult,
         keywords: keywordResult,
@@ -75,7 +63,6 @@ class IntelligenceOrchestrator {
         achievements: achievementResult,
       });
 
-      // Step 10: Generate Professional Report
       const report = this.reportGenerator.generateReport({
         ats: atsResult,
         keywords: keywordResult,
@@ -86,7 +73,6 @@ class IntelligenceOrchestrator {
         normalizedDoc,
       });
 
-      // PHASE 17: Enhanced Analysis Engines
       const grammarResult = this.grammarEngine.analyze(normalizedDoc.cleanedText);
       const readabilityResult = this.readabilityEngine.analyze(normalizedDoc.cleanedText);
       const actionVerbResult = this.actionVerbEngine.analyze(normalizedDoc.cleanedText);
@@ -102,7 +88,34 @@ class IntelligenceOrchestrator {
       });
       const technicalScoreResult = this.technicalScoreEngine.analyze(normalizedDoc.cleanedText);
 
-      // Generate Comprehensive Report V2
+      const credibilityResult = this.credibilityEngine.analyze(normalizedDoc, keywordResult);
+      const skillsEvidenceResult = this.skillsEvidenceEngine.analyze(normalizedDoc, keywordResult);
+      const experienceIntelligenceResult = this.experienceIntelligenceEngine.analyze(normalizedDoc);
+      const projectIntelligenceResult = this.projectIntelligenceEngine.analyze(normalizedDoc);
+      const interviewPrepResult = this.interviewPrepEngine.analyze(normalizedDoc, {
+        semantic: semanticResult,
+        achievements: achievementResult,
+        technicalScore: technicalScoreResult,
+        recruiterConfidence: recruiterConfidenceResult,
+        overallScore: report.executiveSummary?.averageScore || 0,
+      });
+      const learningRoadmapResult = this.learningRoadmapEngine.analyze(normalizedDoc, keywordResult, {});
+
+      const resumeEvolutionResult = this.resumeEvolutionEngine.analyze(
+        normalizedDoc,
+        null,
+        options.allAnalyses || [],
+        options.allResumeVersions || []
+      );
+
+      const resumeIdentityResult = this.resumeIdentityEngine.generateIdentity({
+        atsScore: atsResult.atsScore,
+        overallScore: report.executiveSummary?.averageScore || 0,
+        qualityScore: grammarResult.overallScore,
+        semanticAnalysis: semanticResult,
+        processingTime: Date.now() - startTime,
+      }, options.resume || {}, options);
+
       const comprehensiveReport = this.comprehensiveReportGenerator.generateReport({
         ats: atsResult,
         keywords: keywordResult,
@@ -117,6 +130,13 @@ class IntelligenceOrchestrator {
         benchmark: benchmarkResult,
         jobMatch: jobMatchResult,
         normalizedDoc,
+        credibility: credibilityResult,
+        skillsEvidence: skillsEvidenceResult,
+        experienceIntelligence: experienceIntelligenceResult,
+        projectIntelligence: projectIntelligenceResult,
+        interviewPrep: interviewPrepResult,
+        learningRoadmap: learningRoadmapResult,
+        resumeIdentity: resumeIdentityResult,
         metadata: {
           processingTime: Date.now() - startTime,
         },
@@ -124,10 +144,8 @@ class IntelligenceOrchestrator {
 
       const processingTime = Date.now() - startTime;
 
-      // Return comprehensive analysis with all engines
       return {
         success: true,
-        // Original engines
         ats: atsResult,
         keywords: keywordResult,
         semantic: semanticResult,
@@ -136,18 +154,22 @@ class IntelligenceOrchestrator {
         benchmark: benchmarkResult,
         jobMatch: jobMatchResult,
         summary: report.executiveSummary,
-        
-        // Phase 17 Enhanced engines
         grammar: grammarResult,
         readability: readabilityResult,
         actionVerbs: actionVerbResult,
         quantification: quantificationResult,
         recruiterConfidence: recruiterConfidenceResult,
         technicalScore: technicalScoreResult,
-        
-        // Comprehensive report
+        credibility: credibilityResult,
+        skillsEvidence: skillsEvidenceResult,
+        experienceIntelligence: experienceIntelligenceResult,
+        projectIntelligence: projectIntelligenceResult,
+        interviewPrep: interviewPrepResult,
+        learningRoadmap: learningRoadmapResult,
+        resumeIdentity: resumeIdentityResult,
+        resumeEvolution: resumeEvolutionResult,
         comprehensiveReport,
-        
+        explainedResults,
         confidence: this.calculateOverallConfidence({
           ats: atsResult,
           keywords: keywordResult,
@@ -159,6 +181,10 @@ class IntelligenceOrchestrator {
           quantification: quantificationResult,
           recruiterConfidence: recruiterConfidenceResult,
           technicalScore: technicalScoreResult,
+          credibility: credibilityResult,
+          skillsEvidence: skillsEvidenceResult,
+          experienceIntelligence: experienceIntelligenceResult,
+          projectIntelligence: projectIntelligenceResult,
         }),
         metadata: {
           processingTime,
@@ -166,7 +192,7 @@ class IntelligenceOrchestrator {
           options,
           generatedAt: new Date().toISOString(),
           version: '2.0',
-          phase: 17,
+          phase: 19,
         },
       };
     } catch (error) {
@@ -181,15 +207,9 @@ class IntelligenceOrchestrator {
     }
   }
 
-  /**
-   * Generate rewrites for weak achievements
-   */
   generateRewrites(achievementResult) {
     if (!achievementResult || !achievementResult.rewriteCandidates) {
-      return {
-        totalCandidates: 0,
-        rewrites: [],
-      };
+      return { totalCandidates: 0, rewrites: [] };
     }
 
     const rewrites = achievementResult.rewriteCandidates.map(candidate => {
@@ -199,116 +219,60 @@ class IntelligenceOrchestrator {
       });
     });
 
-    return {
-      totalCandidates: rewrites.length,
-      rewrites,
-    };
+    return { totalCandidates: rewrites.length, rewrites };
   }
 
-  /**
-   * Calculate overall confidence
-   */
   calculateOverallConfidence(results) {
     let confidence = 0;
     let total = 0;
 
-    if (results.ats) {
-      confidence += results.ats.confidence === 'high' ? 3 : results.ats.confidence === 'medium' ? 2 : 1;
-      total += 3;
-    }
-
-    if (results.keywords) {
-      confidence += results.keywords.confidence === 'high' ? 3 : results.keywords.confidence === 'medium' ? 2 : 1;
-      total += 3;
-    }
-
-    if (results.semantic) {
-      confidence += results.semantic.confidence === 'high' ? 3 : results.semantic.confidence === 'medium' ? 2 : 1;
-      total += 3;
-    }
-
-    if (results.achievements) {
-      confidence += results.achievements.confidence === 'high' ? 3 : results.achievements.confidence === 'medium' ? 2 : 1;
-      total += 3;
+    const engines = Object.keys(results);
+    for (const engine of engines) {
+      if (results[engine]) {
+        total++;
+        const score = results[engine].overallScore || results[engine].confidence?.score || results[engine].score || 0;
+        if (score >= 70) confidence += 3;
+        else if (score >= 50) confidence += 2;
+        else confidence += 1;
+      }
     }
 
     const percentage = total > 0 ? Math.round((confidence / total) * 100) : 0;
-
-    return {
-      score: percentage,
-      level: percentage >= 80 ? 'high' : percentage >= 60 ? 'medium' : 'low',
-    };
+    return { score: percentage, level: percentage >= 80 ? 'high' : percentage >= 60 ? 'medium' : 'low' };
   }
 
-  /**
-   * Run evaluation suite
-   * @returns {Object} Evaluation results
-   */
   runEvaluation() {
     return this.evaluationEngine.evaluate();
   }
 
-  /**
-   * Get available analysis options
-   */
   getAvailableOptions() {
     return {
-      targetRole: {
-        type: 'string',
-        required: false,
-        description: 'Target job role for benchmarking',
-        examples: ['software engineer', 'data scientist', 'product manager'],
-      },
-      jobDescription: {
-        type: 'string',
-        required: false,
-        description: 'Job description for matching',
-      },
-      includeRewrite: {
-        type: 'boolean',
-        required: false,
-        default: true,
-        description: 'Include rewrite suggestions for weak achievements',
-      },
-      includeBenchmark: {
-        type: 'boolean',
-        required: false,
-        default: true,
-        description: 'Include industry benchmark comparison',
-      },
+      targetRole: { type: 'string', required: false, description: 'Target job role for benchmarking', examples: ['software engineer', 'data scientist', 'product manager'] },
+      jobDescription: { type: 'string', required: false, description: 'Job description for matching' },
+      includeRewrite: { type: 'boolean', required: false, default: true, description: 'Include rewrite suggestions for weak achievements' },
+      includeBenchmark: { type: 'boolean', required: false, default: true, description: 'Include industry benchmark comparison' },
+      includeCredibility: { type: 'boolean', required: false, default: true, description: 'Include credibility analysis' },
+      includeInterviewPrep: { type: 'boolean', required: false, default: true, description: 'Include interview preparation' },
+      includeLearningRoadmap: { type: 'boolean', required: false, default: true, description: 'Include personalized learning roadmap' },
     };
   }
 
-  /**
-   * Validate analysis options
-   */
   validateOptions(options) {
-    const validation = {
-      isValid: true,
-      errors: [],
-      warnings: [],
-    };
-
+    const validation = { isValid: true, errors: [], warnings: [] };
     if (options.targetRole && typeof options.targetRole !== 'string') {
       validation.errors.push('targetRole must be a string');
       validation.isValid = false;
     }
-
     if (options.jobDescription && typeof options.jobDescription !== 'string') {
       validation.errors.push('jobDescription must be a string');
       validation.isValid = false;
     }
-
     if (options.jobDescription && options.jobDescription.length < 50) {
       validation.warnings.push('Job description is very short - analysis may be less accurate');
     }
-
     return validation;
   }
 
-  /**
-   * Get pipeline status
-   */
   getPipelineStatus() {
     return {
       engines: [
@@ -331,28 +295,27 @@ class IntelligenceOrchestrator {
         { name: 'Recruiter Confidence Engine', status: 'ready', module: 'recruiterConfidenceEngine' },
         { name: 'Technical Score Engine', status: 'ready', module: 'technicalScoreEngine' },
         { name: 'Comprehensive Report Generator V2', status: 'ready', module: 'comprehensiveReportGenerator' },
+        { name: 'Resume Identity Engine', status: 'ready', module: 'resumeIdentityEngine' },
+        { name: 'Credibility Engine', status: 'ready', module: 'credibilityEngine' },
+        { name: 'Skills Evidence Engine', status: 'ready', module: 'skillsEvidenceEngine' },
+        { name: 'Experience Intelligence Engine', status: 'ready', module: 'experienceIntelligenceEngine' },
+        { name: 'Project Intelligence Engine', status: 'ready', module: 'projectIntelligenceEngine' },
+        { name: 'Interview Prep Engine', status: 'ready', module: 'interviewPrepEngine' },
+        { name: 'Learning Roadmap Engine', status: 'ready', module: 'learningRoadmapEngine' },
+        { name: 'Resume Evolution Engine', status: 'ready', module: 'resumeEvolutionEngine' },
       ],
       pipeline: [
-        'Document Normalization',
-        'ATS Analysis',
-        'Keyword Extraction',
-        'Semantic Analysis',
-        'Achievement Analysis',
-        'Industry Benchmarking',
-        'Job Matching (optional)',
-        'Rewrite Generation',
-        'Explanation Generation',
-        'Grammar Analysis',
-        'Readability Analysis',
-        'Action Verb Analysis',
-        'Quantification Analysis',
-        'Recruiter Confidence Calculation',
-        'Technical Score Analysis',
-        'Comprehensive Report Generation V2',
+        'Document Normalization', 'ATS Analysis', 'Keyword Extraction', 'Semantic Analysis',
+        'Achievement Analysis', 'Industry Benchmarking', 'Job Matching (optional)',
+        'Rewrite Generation', 'Grammar Analysis', 'Readability Analysis', 'Action Verb Analysis',
+        'Quantification Analysis', 'Recruiter Confidence', 'Technical Score',
+        'Credibility Analysis', 'Skills Evidence', 'Experience Intelligence',
+        'Project Intelligence', 'Interview Preparation', 'Learning Roadmap',
+        'Resume Identity', 'Comprehensive Report Generation V2',
       ],
       status: 'operational',
       version: '2.0',
-      phase: 17,
+      phase: 19,
     };
   }
 }

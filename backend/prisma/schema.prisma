@@ -115,6 +115,16 @@ model Analysis {
   ats_scores                         ats_scores?
   keywords                           keywords[]
   suggestions                        suggestions[]
+  comprehensiveReport                Json?
+  executiveSummary                   Json?
+  credibilityAnalysis                Json?
+  skillsIntelligence                 Json?
+  experienceIntelligence             Json?
+  projectIntelligence                Json?
+  interviewPrep                      Json?
+  learningRoadmap                    Json?
+  resumeEvolution                    Json?
+  recruiterAnalysis                  Json?
 
   @@index([approvedById])
   @@index([resumeId])

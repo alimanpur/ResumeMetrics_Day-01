@@ -1,5 +1,6 @@
 const AIProvider = require('./aiProvider');
 const { deterministicScore, deterministicSeed } = require('../utils/deterministic');
+const orchestrator = require('../intelligence');
 
 class MockAIProvider extends AIProvider {
   constructor() {
@@ -42,7 +43,7 @@ class MockAIProvider extends AIProvider {
     const seed = deterministicSeed(text)
     const scores = this._scores(text)
 
-    return {
+    const flatResult = {
       ...scores,
       skillsMatch: this._keywords(seed),
       missingKeywords: [
@@ -159,6 +160,36 @@ class MockAIProvider extends AIProvider {
       verdict: 'Good – Competitive for most roles with targeted improvements',
       overallVerdict: 'Good',
     }
+
+    try {
+      const comprehensiveAnalysis = await orchestrator.analyze(text, {
+        ...options,
+        resume,
+        allAnalyses: options.allAnalyses || [],
+        allResumeVersions: options.allResumeVersions || [],
+      })
+      if (comprehensiveAnalysis.success) {
+        return {
+          ...flatResult,
+          comprehensiveReport: comprehensiveAnalysis.comprehensiveReport,
+          explainedResults: comprehensiveAnalysis.explainedResults,
+          credibility: comprehensiveAnalysis.credibility,
+          skillsEvidence: comprehensiveAnalysis.skillsEvidence,
+          experienceIntelligence: comprehensiveAnalysis.experienceIntelligence,
+          projectIntelligence: comprehensiveAnalysis.projectIntelligence,
+          interviewPrep: comprehensiveAnalysis.interviewPrep,
+          learningRoadmap: comprehensiveAnalysis.learningRoadmap,
+          resumeIdentity: comprehensiveAnalysis.resumeIdentity,
+          resumeEvolution: comprehensiveAnalysis.resumeEvolution,
+          confidence: comprehensiveAnalysis.confidence,
+          metadata: comprehensiveAnalysis.metadata,
+        }
+      }
+    } catch (orchestratorError) {
+      console.warn('IntelligenceOrchestrator failed, falling back to flat result:', orchestratorError.message)
+    }
+
+    return flatResult
   }
 
   async compareResumeWithJob(resumeContent, jobDescription, options = {}) {

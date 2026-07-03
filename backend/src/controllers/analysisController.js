@@ -83,6 +83,76 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   });
 });
 
+const getComprehensiveReport = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Comprehensive report retrieved',
+    data: analysis.comprehensiveReport || null,
+    requestId: req.requestId,
+  });
+});
+
+const getCredibilityAnalysis = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Credibility analysis retrieved',
+    data: analysis.credibilityAnalysis || null,
+    requestId: req.requestId,
+  });
+});
+
+const getSkillsIntelligence = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Skills intelligence retrieved',
+    data: analysis.skillsIntelligence || null,
+    requestId: req.requestId,
+  });
+});
+
+const getExperienceIntelligence = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Experience intelligence retrieved',
+    data: analysis.experienceIntelligence || null,
+    requestId: req.requestId,
+  });
+});
+
+const getProjectIntelligence = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Project intelligence retrieved',
+    data: analysis.projectIntelligence || null,
+    requestId: req.requestId,
+  });
+});
+
+const getInterviewPrep = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Interview preparation retrieved',
+    data: analysis.interviewPrep || null,
+    requestId: req.requestId,
+  });
+});
+
+const getLearningRoadmap = asyncHandler(async (req, res) => {
+  const analysis = await analysisService.getAnalysis(req.user.id, req.params.id);
+  res.json({
+    success: true,
+    message: 'Learning roadmap retrieved',
+    data: analysis.learningRoadmap || null,
+    requestId: req.requestId,
+  });
+});
+
 module.exports = {
   createAnalysis,
   getAnalysis,
@@ -91,4 +161,11 @@ module.exports = {
   listAnalyses,
   deleteAnalysis,
   getDashboardStats,
+  getComprehensiveReport,
+  getCredibilityAnalysis,
+  getSkillsIntelligence,
+  getExperienceIntelligence,
+  getProjectIntelligence,
+  getInterviewPrep,
+  getLearningRoadmap,
 };

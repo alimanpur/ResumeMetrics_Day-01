@@ -55,12 +55,23 @@ export default function Dashboard() {
     )
   }
 
+  const resErr = resumesError?.response?.data?.message || resumesError?.message
+  const anErr = analysesError?.response?.data?.message || analysesError?.message
+
   if (error) {
     return (
       <div className="px-8 py-10">
         <ErrorState
           title="Failed to load dashboard"
-          message="We couldn't load your dashboard data. Please try again."
+          message={
+            resErr && anErr
+              ? `Resumes: ${resErr}. Analyses: ${anErr}.`
+              : resErr
+              ? `Resumes: ${resErr}`
+              : anErr
+              ? `Analyses: ${anErr}`
+              : "We couldn't load your dashboard data. Please try again."
+          }
           onRetry={() => window.location.reload()}
         />
       </div>
@@ -71,32 +82,39 @@ export default function Dashboard() {
   const analyses = analysesData?.data?.data || analysesData?.data || []
   
   const totalResumes = resumesData?.data?.meta?.total || resumes.length
-  const avgScore = resumes.length > 0 
+  // Dashboard metrics (Phase 19)
+  const latestAnalysis = analyses.length > 0 ? analyses[0] : null
+  const latestScore = latestAnalysis?.atsScore ?? latestAnalysis?.overallScore ?? (resumes.length > 0 ? resumes[0]?.latestScore : 0)
+  const avgScore = resumes.length > 0
     ? Math.round(resumes.reduce((sum, r) => sum + (r.latestScore || 0), 0) / resumes.length)
     : 0
-  const recentAnalyses = analyses.length
 
-  const trendData = resumes.slice(0, 7).reverse().map((r, i) => ({
-    d: r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : `Item ${i}`,
-    score: r.latestScore || 0,
-  }))
+  const bestScore = latestAnalysis?.hasComprehensiveReport ? Math.round(latestAnalysis.overallScore || latestAnalysis.atsScore || 0) : latestScore
+  const hasIntelligence = latestAnalysis?.hasComprehensiveReport || false
+  const credibilityLevel = latestAnalysis?.credibilityAnalysis?.overallCredibility || 'unknown'
+  const resumeHealthScore = latestAnalysis?.resumeIdentity?.resumeHealth?.score || bestScore
+  const analysisVersion = latestAnalysis?.analysisVersion || '1.0'
 
-  const userName = profileData?.data?.data?.name?.split(' ')[0] || 'User'
-  const plan = billingData?.data?.data?.subscription?.tier || 'Free'
-
-  // Calculate weekly progress
   const weeklyData = resumes.slice(0, 7).reverse().map((r, i) => ({
     day: r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-US', { weekday: 'short' }) : `Day ${i + 1}`,
     score: r.latestScore || 0,
   }))
 
-  // AI Suggestions based on data
+  const userName = profileData?.data?.data?.name ? profileData.data.data.name.split(' ')[0] : 'User'
+  const plan = (() => {
+    try {
+      return billingData?.data?.data?.subscription?.tier || 'Free'
+    } catch {
+      return 'Free'
+    }
+  })()
+
   const aiSuggestions = []
   if (avgScore < 60) {
     aiSuggestions.push({
       icon: AlertTriangle,
       title: 'Critical: Low ATS Score',
-      description: 'Your average score is below 60. Focus on adding relevant keywords and improving formatting.',
+      description: 'Your score is below 60. Add relevant keywords and improve formatting.',
       priority: 'high'
     })
   }
@@ -104,7 +122,7 @@ export default function Dashboard() {
     aiSuggestions.push({
       icon: Target,
       title: 'Upload Your First Resume',
-      description: 'Start your journey by uploading a resume to get personalized insights.',
+      description: 'Start your journey by uploading a resume to get intelligence insights.',
       priority: 'high'
     })
   }
@@ -112,15 +130,15 @@ export default function Dashboard() {
     aiSuggestions.push({
       icon: Sparkles,
       title: 'Excellent Performance',
-      description: 'Your resume is well-optimized. Consider comparing versions to track improvements.',
+      description: hasIntelligence ? 'Phase 19 intelligence report generated successfully.' : 'Your resume is well-optimized. Consider comparing versions.',
       priority: 'low'
     })
   }
-  if (recentAnalyses > 0) {
+  if (hasIntelligence) {
     aiSuggestions.push({
       icon: TrendingUp,
-      title: 'Track Your Progress',
-      description: `You've run ${recentAnalyses} analysis${recentAnalyses > 1 ? 'es' : ''}. Keep iterating to improve your score.`,
+      title: 'Intelligence Report Ready',
+      description: `Phase 19 analysis complete. Credibility: ${credibilityLevel}. Resume Health: ${resumeHealthScore}/100.`,
       priority: 'medium'
     })
   }
@@ -134,8 +152,8 @@ export default function Dashboard() {
           </span>
           <h1 className="mt-2 font-serif text-4xl italic">Good morning, {userName}.</h1>
           <p className="mt-2 text-sm text-ink/60">
-            {recentAnalyses > 0 
-              ? `You have ${recentAnalyses} recent analysis${recentAnalyses > 1 ? 'es' : ''}. Keep improving!`
+            {analyses.length > 0 
+              ? `You have ${analyses.length} recent analysis${analyses.length > 1 ? 'es' : ''}. Keep improving!`
               : 'Ready to start your first diagnostic?'}
           </p>
         </div>
@@ -147,12 +165,12 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid Phase 19 */}
       <div className="grid gap-px border border-border bg-border md:grid-cols-4">
-        <Stat label="Current score" value={avgScore.toString()} suffix="/100" trend={avgScore > 0 ? `${Math.min(avgScore, 10)} avg` : 'No data'} />
-        <Stat label="Diagnostics run" value={totalResumes.toString()} trend={totalResumes > 0 ? `${recentAnalyses} recent` : 'Start now'} />
-        <Stat label="Resumes" value={totalResumes.toString()} trend={totalResumes > 0 ? 'In archive' : 'Upload one'} />
-        <Stat label="Plan" value={plan} trend="Upgrade available" mono />
+        <Stat label="Latest ATS score" value={Number.isFinite(latestScore) ? latestScore.toString() : '0'} suffix="/100" trend={hasIntelligence ? 'Phase 19 Intelligence' : 'Standard'} />
+        <Stat label="Resume Health" value={Number.isFinite(resumeHealthScore) ? resumeHealthScore.toString() : '0'} suffix="/100" trend={resumeHealthScore >= 80 ? 'Healthy' : resumeHealthScore >= 60 ? 'Needs Attention' : 'Critical'} />
+        <Stat label="Diagnostics run" value={totalResumes.toString()} trend={`${analysisVersion} · Latest`} />
+        <Stat label="Plan" value={plan} trend="Currently Free Beta · Premium Coming Soon" mono />
       </div>
 
       {/* Main Content Grid */}
@@ -164,16 +182,16 @@ export default function Dashboard() {
               <h2 className="font-serif text-2xl italic">Score trajectory</h2>
               <p className="mt-1 text-xs text-ink/50">Your diagnostic history over time</p>
             </div>
-            {trendData.length > 1 && (
+            {weeklyData.length > 1 && (
               <span className="inline-flex items-center gap-1 font-mono text-xs text-emerald-600">
                 <TrendingUp className="size-3" /> Improving
               </span>
             )}
           </div>
           <div className="h-72">
-            {trendData.length > 1 ? (
+            {weeklyData.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData}>
+                <AreaChart data={weeklyData}>
                   <defs>
                     <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="oklch(0.55 0.21 262)" stopOpacity={0.3} />
@@ -263,21 +281,21 @@ export default function Dashboard() {
       {/* Bottom Section */}
       {resumes.length > 0 && (
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          {/* Recent Activity / Latest Reports */}
+          {/* Latest Resume Upload */}
           <section className="border border-border bg-paper p-6">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="font-serif text-2xl italic">Latest Reports</h2>
-                <p className="mt-1 text-xs text-ink/50">Your most recent diagnostics</p>
+                <h2 className="font-serif text-2xl italic">Latest Upload</h2>
+                <p className="mt-1 text-xs text-ink/50">Most recently added resume</p>
               </div>
               <Link to="/history" className="text-xs text-accent hover:underline">View all</Link>
             </div>
             <div className="space-y-3">
-              {resumes.slice(0, 4).map((r) => (
+              {resumes.slice(0, 1).map((r) => (
                 <Link
                   key={r.id}
-                  to={r.analysisId ? `/analysis/${r.analysisId}` : `/analysis?resumeId=${r.id}`}
-                  className="flex items-center justify-between border border-border bg-paper-2 p-3 hover:border-ink/20"
+                  to={r.analysisId ? `/analysis/${r.analysisId}` : `/history`}
+                  className="flex items-center justify-between border border-border bg-paper-2 p-4 hover:border-ink/20"
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="size-4 text-ink/40" />
@@ -299,42 +317,89 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* Resume Health & Insights */}
-          <section className="border border-border bg-ink p-6 text-paper">
-            <div className="flex items-center gap-2">
-              <Activity className="size-4 text-accent" />
-              <h2 className="font-serif text-2xl italic">Resume Health</h2>
+          {/* Activity Timeline */}
+          <section className="border border-border bg-paper p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="font-serif text-2xl italic">Activity Timeline</h2>
+                <p className="mt-1 text-xs text-ink/50">Recent interventions</p>
+              </div>
             </div>
-            {resumes.length > 0 && avgScore > 0 ? (
-              <>
-                <p className="mt-4 text-sm leading-relaxed text-paper/70">
-                  Your résumé average score is {avgScore}/100. 
-                  {avgScore >= 80 
-                    ? ' Great job! Your resume is well-optimized for ATS systems.'
-                    : avgScore >= 60
-                    ? ' Good start! Consider improving keyword matching and formatting.'
-                    : ' There\'s room for improvement. Focus on ATS-friendly formatting and relevant keywords.'}
-                </p>
-                <div className="mt-8 grid grid-cols-3 gap-px bg-paper/10">
-                  <div className="bg-ink p-3">
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40">Resumes</div>
-                    <div className="mt-1 font-serif text-2xl">{totalResumes}</div>
+            <div className="space-y-4">
+              {resumes.slice(0, 4).map((r, i) => (
+                <div key={r.id} className="flex items-start gap-3">
+                  <div className="relative mt-1">
+                    <div className="size-2 rounded-full bg-accent" />
+                    {i < (resumes.length - 1) && <div className="absolute left-1/2 top-2 h-full w-px -translate-x-1/2 bg-border" />}
                   </div>
-                  <div className="bg-ink p-3">
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40">Avg Score</div>
-                    <div className="mt-1 font-serif text-2xl">{avgScore}</div>
-                  </div>
-                  <div className="bg-ink p-3">
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-paper/40">Analyses</div>
-                    <div className="mt-1 font-serif text-2xl">{recentAnalyses}</div>
+                  <div className="flex-1 pb-4">
+                    <div className="text-sm">
+                      <span className="font-medium">Uploaded</span> {r.fileName}
+                    </div>
+                    <div className="text-xs text-ink/50">
+                      {new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
                   </div>
                 </div>
-              </>
+              ))}
+              {resumes.length === 0 && (
+                <p className="text-sm text-ink/60">No activity yet. Upload a resume to get started.</p>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Upcoming Features & Recommendations */}
+      {resumes.length > 0 && (
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          {/* Top Recommendation */}
+          <section className="border border-border bg-paper p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="font-serif text-2xl italic">Top Recommendation</h2>
+                <p className="mt-1 text-xs text-ink/50">Highest priority action</p>
+              </div>
+            </div>
+            {analyses.length > 0 && analyses[0].improvementSuggestions?.length > 0 ? (
+              <div className="border-l-2 border-accent bg-accent/5 p-4">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-accent" />
+                  <div>
+                    <div className="text-sm font-medium">{analyses[0].improvementSuggestions[0].category || 'Optimize Resume'}</div>
+                    <div className="mt-1 text-xs text-ink/60">{analyses[0].improvementSuggestions[0].suggestion || analyses[0].improvementSuggestions[0].issue || 'Focus on adding missing keywords and improving formatting.'}</div>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <p className="mt-4 text-sm leading-relaxed text-paper/70">
-                Upload your first resume to get personalized insights and recommendations for improvement.
-              </p>
+              <p className="text-sm text-ink/60">Upload a resume to get personalized recommendations.</p>
             )}
+          </section>
+
+          {/* Upcoming Features */}
+          <section className="border border-border bg-paper p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="font-serif text-2xl italic">Upcoming Features</h2>
+                <p className="mt-1 text-xs text-ink/50">What's coming next</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {[
+                { title: 'AI Resume Rewriter', desc: 'Auto-rewrite sections with better ATS language',soon: 'Q3 2025' },
+                { title: 'LinkedIn Integration', desc: 'Sync your profile directly', soon: 'Q3 2025' },
+                { title: 'Cover Letter Analysis', desc: 'Evaluate your cover letters too', soon: 'Q4 2025' },
+                { title: 'Interview Prep', desc: 'Generate interview questions from JD', soon: 'Q4 2025' },
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center justify-between border border-border bg-paper-2 p-3">
+                  <div>
+                    <div className="text-sm font-medium">{feature.title}</div>
+                    <div className="text-xs text-ink/50">{feature.desc}</div>
+                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40">{feature.soon}</span>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
       )}
@@ -367,7 +432,11 @@ export default function Dashboard() {
 }
 
 function Stat({ label, value, suffix, trend, mono }) {
-  const { count } = useCountUp(parseFloat(value) || 0, 0, 1200)
+  const safeValue = (() => {
+    const n = parseFloat(value)
+    return Number.isFinite(n) ? n : 0
+  })()
+  const { count } = useCountUp(safeValue, 0, 1200)
   
   return (
     <div className="bg-paper p-6 transition-all duration-200 hover:bg-paper-2 focus-visible-ring">

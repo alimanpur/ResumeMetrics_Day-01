@@ -97,7 +97,7 @@ export default function Compare() {
     )
   }
 
-  // Show comparison results
+// Show comparison results
   if (comparisonId && comparison) {
     const resumeA = resumes.find(r => r.id === selectedA)
     const resumeB = resumes.find(r => r.id === selectedB)

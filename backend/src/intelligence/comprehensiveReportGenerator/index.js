@@ -119,6 +119,9 @@ class ComprehensiveReportGenerator {
       certificationAnalysis,
       atsCompatibility,
       
+      // Phase 19: Resume Evolution
+      resumeEvolution: allResults.resumeEvolution || null,
+      
       // Suggestions
       aiRewriteSuggestions,
       beforeAfterExamples,
@@ -794,7 +797,7 @@ class ComprehensiveReportGenerator {
       probability -= (jobMatch.hiringRisk?.score || 0) * 0.1;
     }
 
-    const percentage = Math.max(0, Math.min(100, Math.round(probability)));
+    const percentage = Math.max(0, Math.min(100, Math.round(isFinite(probability) ? probability : 50)));
 
     return {
       percentage,

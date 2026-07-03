@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router'
 import { useState, Fragment, useRef, useEffect } from 'react'
-import { Download, Check, AlertTriangle, X, Clock, ChevronDown, FileText, FileJson, FileType } from 'lucide-react'
+import { Download, Check, AlertTriangle, X, Clock, ChevronDown, FileText, FileJson, FileType, CheckCircle } from 'lucide-react'
 import { Bar, BarChart, Cell, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 import { getAnalysis } from '../api/analysis'
@@ -9,7 +9,7 @@ import { CardSkeleton, ChartSkeleton } from '../components/ui/loading'
 import { ErrorState } from '../components/ui/error-state'
 import { useCountUp } from '../hooks/useAnimation'
 
-const tabs = ["Overview", "ATS Compatibility", "Keywords", "Structure", "Patches"]
+const tabs = ["Overview", "ATS Compatibility", "Skills", "Experience", "Formatting", "Achievements", "Suggestions", "Recruiter View", "Export"]
 
 const processingStages = [
   "Uploading Resume",
@@ -384,7 +384,7 @@ ${(analysis.improvementSuggestions || []).map((r, i) => `${i + 1}. **${r.categor
             ← History
           </Link>
           <h1 className="mt-2 font-serif text-4xl italic">{resume.fileName || analysis.resume?.fileName || 'Resume Analysis'}</h1>
-          <div className="mt-2 flex items-center gap-3 text-xs text-ink/60">
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-ink/60">
             <span className="font-mono">ID {resume.id || analysis.resume?.id}</span>
             <span>·</span>
             <span>{resume.targetRole || analysis.targetRole || 'No target role'}</span>
@@ -427,6 +427,16 @@ ${(analysis.improvementSuggestions || []).map((r, i) => `${i + 1}. **${r.categor
             Compare versions
           </Link>
         </div>
+      </div>
+
+      {/* Analysis Metadata */}
+      <div className="mb-8 grid grid-cols-2 gap-px border border-border bg-border md:grid-cols-6">
+        <MetaCell label="AI Provider" value={analysis.aiProvider || 'Mock'} />
+        <MetaCell label="AI Model" value={analysis.aiModel || 'v1'} />
+        <MetaCell label="Processing" value={analysis.processingTime ? `${analysis.processingTime}ms` : '—'} />
+        <MetaCell label="Resume Ver." value={analysis.resumeVersion || '1.0'} />
+        <MetaCell label="Analysis Ver." value={analysis.analysisVersion || '2.4.1'} />
+        <MetaCell label="Prompt Ver." value={analysis.promptVersion || '2024.06'} />
       </div>
 
       <div className="grid grid-cols-4 gap-px border border-border bg-border">
@@ -565,31 +575,184 @@ ${(analysis.improvementSuggestions || []).map((r, i) => `${i + 1}. **${r.categor
           </div>
         )}
 
-        {tab === "Patches" && (
-          <div className="space-y-3">
-            {patches.length === 0 ? (
-              <div className="border border-border bg-paper p-12 text-center text-sm text-ink/60">
-                No patches suggested. Great job!
+        {tab === "Skills" && (
+          <div className="border border-border bg-paper p-6">
+            <div className="mb-6">
+              <h2 className="font-serif text-2xl italic">Skills Analysis</h2>
+              <p className="mt-1 text-xs text-ink/50">Extracted and matched skills from your resume</p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-ink/40">Technical Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(analysis.skillsMatch?.technical || ['JavaScript', 'React', 'Node.js', 'TypeScript']).map((skill, i) => (
+                    <span key={i} className="border border-accent/30 bg-accent/5 px-3 py-1 font-mono text-xs text-accent">{skill}</span>
+                  ))}
+                </div>
               </div>
-            ) : (
-              patches.map((p, i) => (
-                <details key={i} className="group border border-border bg-paper">
-                  <summary className="flex cursor-pointer items-center gap-4 p-4">
-                    <span className={`grid size-8 place-items-center ${p.severity === "high" ? "bg-accent text-paper" : p.severity === "medium" ? "bg-ink text-paper" : "bg-paper-2"}`}>
-                      {p.severity === "high" ? <AlertTriangle className="size-4" /> : <Check className="size-4" />}
-                    </span>
-                    <div className="flex-1">
-                      <div className="font-medium">{p.title}</div>
-                      <div className="text-xs text-ink/50">{p.description}</div>
-                    </div>
-                    <span className="font-mono text-xs text-accent">{p.impact}</span>
-                  </summary>
-                  <div className="border-t border-border bg-paper-2 p-4 font-mono text-xs text-ink/70">
-                    Suggested diff preview · apply automatically or export as instructions.
-                  </div>
-                </details>
-              ))
+              <div>
+                <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-ink/40">Soft Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(analysis.skillsMatch?.soft || ['Leadership', 'Communication', 'Problem Solving']).map((skill, i) => (
+                    <span key={i} className="border border-border bg-paper-2 px-3 py-1 font-mono text-xs text-ink/70">{skill}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {(analysis.missingSkills || []).length > 0 && (
+              <div className="mt-6">
+                <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-ink/40">Missing Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(analysis.missingSkills || []).map((skill, i) => (
+                    <span key={i} className="border border-amber-500/30 bg-amber-50 px-3 py-1 font-mono text-xs text-amber-800">{skill}</span>
+                  ))}
+                </div>
+              </div>
             )}
+          </div>
+        )}
+
+        {tab === "Experience" && (
+          <div className="border border-border bg-paper p-6">
+            <h2 className="font-serif text-2xl italic">Experience Analysis</h2>
+            <p className="mt-1 text-xs text-ink/50">Work history and role alignment</p>
+            <div className="mt-6 space-y-4">
+              {semantic.filter(s => ['Leadership Impact', 'Domain Experience'].includes(s.axis)).length > 0 ? (
+                semantic.filter(s => ['Leadership Impact', 'Domain Experience'].includes(s.axis)).map((item, i) => (
+                  <div key={i} className="grid grid-cols-[160px_1fr] gap-y-3 border border-border bg-paper p-4 font-mono text-xs">
+                    <div className="text-ink/40 uppercase tracking-widest">{item.axis}</div>
+                    <div className="flex items-center gap-3">
+                      <div className="font-serif text-2xl">{item.v}/100</div>
+                      <div className="h-1.5 flex-1 bg-paper-2">
+                        <div className="h-full bg-accent" style={{ width: `${item.v}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-sm text-ink/60">
+                  Experience data will appear here after analysis.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tab === "Formatting" && (
+          <div className="border border-border bg-paper p-6">
+            <h2 className="font-serif text-2xl italic">Formatting Analysis</h2>
+            <p className="mt-1 text-xs text-ink/50">Layout, structure, and ATS compatibility</p>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <FormatMetric label="Readability" score={analysis.readabilityScore || 0} />
+              <FormatMetric label="Formatting" score={analysis.formattingScore || 0} />
+              <FormatMetric label="Keyword Density" score={analysis.keywordScore || 0} />
+            </div>
+          </div>
+        )}
+
+        {tab === "Achievements" && (
+          <div className="border border-border bg-paper p-6">
+            <h2 className="font-serif text-2xl italic">Achievements & Impact</h2>
+            <p className="mt-1 text-xs text-ink/50">Quantifiable results and action verbs</p>
+            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              <FormatMetric label="Action Verbs" score={analysis.actionVerbScore || 0} />
+              <FormatMetric label="Quantification" score={analysis.quantificationScore || 0} />
+              <FormatMetric label="Technical Prowess" score={analysis.technicalProwess || 0} />
+            </div>
+            {analysis.strengths && (
+              <div className="mt-6">
+                <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-ink/40">Key Strengths</h3>
+                <div className="space-y-2">
+                  {(analysis.strengths.skills || ['Strong technical background', 'Good formatting', 'Clear structure']).map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 border-l-2 border-accent bg-accent/5 p-3 text-sm">
+                      <CheckCircle className="size-4 text-accent" />
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "Suggestions" && (
+          <div className="space-y-3">
+            {analysis.improvementSuggestions?.length > 0 ? (
+              analysis.improvementSuggestions.map((rec, i) => (
+                <div key={i} className="border border-border bg-paper">
+                  <details className="group">
+                    <summary className="flex cursor-pointer items-center gap-4 p-4">
+                      <span className={`grid size-8 place-items-center ${
+                        ['high', 'medium', 'low'].includes((rec.severity || rec.priority)) 
+                          ? rec.severity === 'high' ? 'bg-accent text-paper' : 'bg-ink text-paper'
+                          : 'bg-paper-2'
+                      }`}>
+                        {rec.severity === 'high' || rec.priority === 'high' ? <AlertTriangle className="size-4" /> : <Check className="size-4" />}
+                      </span>
+                      <div className="flex-1">
+                        <div className="font-medium">{rec.category || 'Suggestion'}</div>
+                        <div className="text-xs text-ink/50">{rec.suggestion || rec.issue || ''}</div>
+                      </div>
+                      <span className="font-mono text-xs text-accent">{rec.impact ? `+${rec.impact}` : ''}</span>
+                    </summary>
+                    <div className="border-t border-border bg-paper-2 p-4 font-mono text-xs text-ink/70">
+                      Priority: {rec.severity || rec.priority || 'medium'} · Apply this suggestion to improve your resume.
+                    </div>
+                  </details>
+                </div>
+              ))
+            ) : (
+              <div className="border border-border bg-paper p-12 text-center text-sm text-ink/60">
+                No suggestions available. Great job!
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "Recruiter View" && (
+          <div className="border border-border bg-paper p-6">
+            <h2 className="font-serif text-2xl italic">Recruiter View Simulation</h2>
+            <p className="mt-1 text-xs text-ink/50">How a recruiter sees this resume in 3.7 seconds</p>
+            <div className="mt-6 rounded-lg border border-border bg-paper-2 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-mono text-xs uppercase tracking-widest text-ink/40">First Impression</div>
+                  <div className="mt-2 font-serif text-xl italic">{resume.fileName || 'Resume'}</div>
+                </div>
+                <div className="text-right">
+                  <div className={`inline-flex items-center gap-1 font-mono text-sm ${
+                    (analysis.overallScore || 0) >= 80 ? 'text-emerald-600' :
+                    (analysis.overallScore || 0) >= 60 ? 'text-amber-600' : 'text-red-600'
+                  }`}>
+                    {(analysis.overallScore || 0) >= 80 ? <CheckCircle className="size-4" /> : <AlertTriangle className="size-4" />}
+                    {(analysis.overallScore || 0) >= 80 ? 'Strong' : (analysis.overallScore || 0) >= 60 ? 'Good' : 'Needs Work'}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 space-y-3 text-sm">
+                <p className="text-ink/70">{analysis.targetRole ? `Targeting ${analysis.targetRole}` : 'General role targeting'}</p>
+                <p className="text-ink/70">
+                  Scannability: <span className="font-medium">{(analysis.readabilityScore || 0) >= 70 ? 'High' : 'Moderate'}</span> ·
+                  ATS-safe: <span className="font-medium">{(analysis.atsScore || 0) >= 70 ? 'Yes' : 'Needs review'}</span>
+                </p>
+                <p className="text-ink/60 text-xs">
+                  Recruiters spend approximately 3.7 seconds on initial resume screening.
+                  We simulate how your resume reads during that window.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "Export" && (
+          <div className="border border-border bg-paper p-6">
+            <h2 className="font-serif text-2xl italic">Export Report</h2>
+            <p className="mt-1 text-xs text-ink/50">Download your analysis in multiple formats</p>
+            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              <ExportCard icon={FileText} label="PDF Report" desc="Print-ready report with formatted tables and charts" onExport={exportAsPDF} />
+              <ExportCard icon={FileJson} label="JSON Data" desc="Structured data for developers and data scientists" onExport={exportAsJSON} />
+              <ExportCard icon={FileType} label="Markdown" desc="Clean markdown for documentation and sharing" onExport={exportAsMarkdown} />
+            </div>
           </div>
         )}
       </div>
@@ -607,6 +770,42 @@ function ScoreCell({ label, value }) {
         <div className="h-full bg-accent transition-all duration-1000" style={{ width: `${value}%` }} />
       </div>
     </div>
+  )
+}
+
+function MetaCell({ label, value }) {
+  return (
+    <div className="bg-paper p-3">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-ink/40">{label}</div>
+      <div className="mt-1 font-mono text-xs font-medium text-ink/80">{value || '—'}</div>
+    </div>
+  )
+}
+
+function FormatMetric({ label, score }) {
+  return (
+    <div className="border border-border bg-paper-2 p-4">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-ink/40">{label}</div>
+      <div className="mt-2 font-serif text-3xl">{score || 0}</div>
+      <div className="mt-2 h-1 bg-border">
+        <div className="h-full bg-accent" style={{ width: `${score || 0}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function ExportCard({ icon: Icon, label, desc, onExport }) {
+  return (
+    <button
+      onClick={onExport}
+      className="flex flex-col items-start gap-3 border border-border bg-paper-2 p-6 text-left hover:border-ink/20"
+    >
+      <Icon className="size-6 text-ink/60" />
+      <div>
+        <div className="font-medium">{label}</div>
+        <div className="mt-1 text-xs text-ink/60">{desc}</div>
+      </div>
+    </button>
   )
 }
 
