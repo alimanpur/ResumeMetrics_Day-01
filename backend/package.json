@@ -3,10 +3,15 @@
   "version": "1.0.0",
   "description": "Resume Intelligence Platform - Production Backend",
   "main": "src/server.js",
+
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "build": "node src/server.js",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:push": "prisma db push",
