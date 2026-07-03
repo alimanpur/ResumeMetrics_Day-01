@@ -1,0 +1,1 @@
+import{k as e}from"./index-DiVnqtKK.js";var t=()=>e.get(`/billing`);export{t};

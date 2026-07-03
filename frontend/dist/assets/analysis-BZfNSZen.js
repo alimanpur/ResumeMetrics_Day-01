@@ -1,0 +1,1 @@
+import{r as e}from"./react-B8IZ02wI.js";import{k as t}from"./index-DiVnqtKK.js";var n=e({createAnalysis:()=>r,getAnalyses:()=>i,getAnalysis:()=>a,getAnalysisByResume:()=>o}),r=e=>t.post(`/analyses`,e),i=e=>t.get(`/analyses`,{params:e}),a=e=>t.get(`/analyses/${e}`),o=e=>t.get(`/analyses/resume/${e}`);export{a as i,r as n,i as r,n as t};
