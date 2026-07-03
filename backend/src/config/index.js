@@ -31,8 +31,29 @@ const config = {
   },
 
   cors: {
-    origin: env.CLIENT_URL,
+    origin(origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://resume-metrics-day-01.vercel.app",
+      ];
+
+      // Allow requests with no Origin (health checks, curl, Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With"
+    ],
   },
 
   rateLimit: {
