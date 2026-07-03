@@ -326,18 +326,16 @@ export function AppShell({ children }) {
             <div className="flex items-center gap-4 text-xs text-ink/50">
               <span className="font-mono font-bold uppercase tracking-tighter">ResuMetrics</span>
               <span>·</span>
-              <span>v2.4.1</span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-emerald-500" />
                 All systems operational
               </span>
             </div>
             <div className="flex items-center gap-4 text-xs text-ink/50">
-              <span className="hidden md:inline">© 2025 ResuMetrics</span>
+              <span className="hidden md:inline">© 2026 ResuMetrics</span>
               <a href="#" className="hover:text-ink/80">Documentation</a>
               <a href="#" className="hover:text-ink/80">API</a>
               <a href="#" className="hover:text-ink/80">Changelog</a>
-              <span className="hidden md:inline">GitHub</span>
             </div>
           </div>
         </footer>
